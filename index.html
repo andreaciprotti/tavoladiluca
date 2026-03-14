@@ -6,7 +6,7 @@
   <title>Tavola periodica - Layout HTML/CSS</title>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, serverTimestamp} from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
     
     const firebaseConfig = {
       apiKey: "AIzaSyDokN15E29Fgs9u_3G83aBQioZaZn5zRJs",
@@ -20,63 +20,49 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    async function aggiungiElemento(e,i,r) {
-      await addDoc(collection(db, "proposte"), {
-        elemento: e,
-        indizio: i,
-        risposta: r
-      });
-      alert("Elemento salvato!");
-    }
-
-    // Aggiungi questa funzione nel tuo tag <script type="module"> 
-// o dove hai definito la logica Firebase
-
-async function proponiNuovo() {
-    // 1. Chiedi i dati all'utente
-    const simbolo = prompt("Quale elemento vuoi proporre? (Simbolo o Nome)");
-    if (!simbolo) return;
-
-    const risposta = prompt("Inserisci la parola associata a " + simbolo);
-    if (!risposta) return;
-
-    const indizio = prompt("Inserisci la definizione/indizio per '" + risposta + "'");
-    if (!indizio) {
-        alert("Tutti i campi sono obbligatori per inviare la proposta.");
-        return;
-    }
-
-    // 2. Invia al Database (usa la funzione aggiungiElemento che hai già)
-    try {
-        await window.aggiungiElemento(simbolo, indizio, risposta);
-        // Nota: se 'aggiungiElemento' non è window. , usa direttamente:
-        /*
+    async function aggiungiElemento(e, i, r) {
+      try {
         await addDoc(collection(db, "proposte"), {
-            elemento: simbolo,
-            indizio: indizio,
-            risposta: risposta,
-            timestamp: new Date()
+          elemento: e,
+          indizio: i,
+          risposta: r,
+          creatoIl: serverTimestamp() 
         });
-        alert("Elemento salvato!");
-        */
-    } catch (error) {
-        console.error("Errore nell'invio:", error);
-        alert("Si è verificato un errore durante il salvataggio.");
-    }
-}
-
-// Esponila a window per poterla chiamare dal tuo bottone HTML
-window.proponiNuovo = proponiNuovo;
-
-    async function mostraElementi() {
-      const querySnapshot = await getDocs(collection(db, "proposte"));
-      querySnapshot.forEach((doc) => {
-        console.log(`${doc.id} =>`, doc.data());
-      });
+        alert("Elemento salvato con successo!");
+      } catch (error) {
+        console.error("Errore nel salvataggio:", error);
+      }
     }
 
+
+    async function proponiNuovo() {
+        // 1. Chiedi i dati all'utente
+        const simbolo = prompt("Quale elemento vuoi proporre? (Simbolo o Nome)");
+        if (!simbolo) return;
+
+        const risposta = prompt("Inserisci la parola associata a " + simbolo);
+        if (!risposta) return;
+
+        const indizio = prompt("Inserisci la definizione/indizio per '" + risposta + "'");
+        if (!indizio) {
+            alert("Tutti i campi sono obbligatori per inviare la proposta.");
+            return;
+        }
+
+        // 2. Invia al Database (usa la funzione aggiungiElemento che hai già)
+        try {
+            await window.aggiungiElemento(simbolo, indizio, risposta);
+        } catch (error) {
+            console.error("Errore nell'invio:", error);
+            alert("Si è verificato un errore durante il salvataggio.");
+        }
+    }
+
+
+    window.proponiNuovo = proponiNuovo;
+
+   
     window.aggiungiElemento = aggiungiElemento;
-    window.mostraElementi = mostraElementi;
   </script>
   <style>
     :root{
